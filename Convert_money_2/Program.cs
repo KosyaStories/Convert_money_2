@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Convert_money_2
 {
@@ -6,15 +6,15 @@ namespace Convert_money_2
     {
         static void Main(string[] args)
         {
-            double walletRub;
-            double walletUsd;
-            double walletEur;
+            float walletRub;
+            float walletUsd;
+            float walletEur;
 
-            double rubToUsd = 70.4, usdToRub = 79.4;
-            double rubToEur = 75.4, eurToRub = 84.4;
-            double usdToEur = 1.05, eurToUsd = 0.94;
+            float rubToUsd = 0.0173f, usdToRub = 79.4f;
+            float rubToEur = 0.0164f, eurToRub = 84.4f;
+            float usdToEur = 0.94f, eurToUsd = 1.05f;
 
-            double canToSolvency;
+            float canToSolvency;
             string exchangeOperation;
 
             Console.SetCursorPosition(0, 20);
@@ -25,24 +25,22 @@ namespace Convert_money_2
 
             Console.SetCursorPosition(0, 0);
             Console.WriteLine("Добро пожаловать в наш обменник валют!");
+            //CheckCrash("Введите баланс рублей: ", out walletRub);
             Console.Write("Введите баланс рублей: ");
             walletRub = Convert.ToSingle(Console.ReadLine());
-            if (walletRub < 0)
-            {
-                WriteError("Введено недопустимое значение.");
-            }
+
+            CheckWallet(walletRub);
+
             Console.Write("Введите баланс долларов: ");
             walletUsd = Convert.ToSingle(Console.ReadLine());
-            if (walletUsd < 0)
-            {
-                WriteError("Введено недопустимое значение.");
-            }
+
+            CheckWallet(walletUsd);
+
             Console.Write("Введите баланс евро: ");
             walletEur = Convert.ToSingle(Console.ReadLine());
-            if (walletEur < 0)
-            {
-                WriteError("Введено недопустимое значение.");
-            }
+
+            CheckWallet(walletEur);
+
             if (walletRub < 0 || walletUsd < 0 || walletEur < 0)
             {
                 WriteError("Ошибка операции.");
@@ -59,47 +57,50 @@ namespace Convert_money_2
                 Console.Write("Ваш выбор: ");
                 exchangeOperation = Console.ReadLine();
                 Console.Write("Сколько валюты желаете обменять? - ");
-                canToSolvency = Convert.ToSingle(Console.ReadLine());
-                if (walletRub >= canToSolvency && walletUsd >= canToSolvency && walletEur >= canToSolvency && canToSolvency > 0)
+
+                switch (exchangeOperation)
                 {
-                    switch (exchangeOperation)
-                    {
-                        case "1":
-                            walletRub -= canToSolvency;
-                            walletUsd += canToSolvency / rubToUsd;
-                            break;
-                        case "2":
-                            walletUsd -= canToSolvency;
-                            walletRub += canToSolvency * usdToRub;
-                            break;
-                        case "3":
-                            walletRub -= canToSolvency;
-                            walletEur += canToSolvency / rubToEur;
-                            break;
-                        case "4":
-                            walletEur -= canToSolvency;
-                            walletRub += canToSolvency * eurToRub;
-                            break;
-                        case "5":
-                            walletUsd -= canToSolvency;
-                            walletEur += canToSolvency / usdToEur;
-                            break;
-                        case "6":
-                            walletEur -= canToSolvency;
-                            walletUsd += canToSolvency * eurToUsd;
-                            break;
-                        default:
-                            Console.WriteLine("Выбрана неверная операция.");
-                            break;
-                    }
-                }
-                else
-                {
-                    WriteError("Недостаточно средств на балансе либо введено недопустимое значение.");
+                    case "1":
+                        ConversionFormula(ref walletUsd, out canToSolvency, ref rubToUsd, ref walletRub);
+                        break;
+                    case "2":
+                        ConversionFormula(ref walletRub, out canToSolvency, ref usdToRub, ref walletUsd);
+                        break;
+                    case "3":
+                        ConversionFormula(ref walletEur, out canToSolvency, ref rubToEur, ref walletRub);
+                        break;
+                    case "4":
+                        ConversionFormula(ref walletRub, out canToSolvency, ref eurToRub, ref walletEur);
+                        break;
+                    case "5":
+                        ConversionFormula(ref walletEur, out canToSolvency, ref usdToEur, ref walletUsd);
+                        break;
+                    case "6":
+                        ConversionFormula(ref walletUsd, out canToSolvency, ref eurToUsd, ref walletEur);
+                        break;
+                    default:
+                        WriteError("\nВыбрана неверная операция.");
+                        break;
                 }
                 Console.WriteLine($"Ваш баланс: {walletRub} руб., " + $" {walletUsd} usd., " + $" {walletEur} eur. ");
             }
         }
+
+        static void ConversionFormula(ref float increaseBalance, out float solvency, ref float rate, ref float decreaseBalance)
+        {
+            solvency = Convert.ToSingle(Console.ReadLine());
+
+            if (solvency > 0)
+            {
+                increaseBalance = solvency * rate + increaseBalance;
+                decreaseBalance -= solvency;
+            }
+            else
+            {
+                WriteError("Недостаточно средств на балансе либо введено недопустимое значение.");
+            }
+        }
+
         static void WriteError(string text)
         {
             ConsoleColor defaultColor = Console.ForegroundColor;
@@ -107,5 +108,30 @@ namespace Convert_money_2
             Console.WriteLine(text);
             Console.ForegroundColor = defaultColor;
         }
+
+        static bool CheckWallet(double wallet)
+        {
+            if (wallet < 0)
+            {
+                WriteError("Введено недопустимое значение.");
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        //private static float CheckCrash(string text, out float value)
+        //{
+        //    float number;
+        //    Console.Write("text");
+
+        //    while (float.TryParse(value = Console.ReadLine(), out number) == false)        // не дает преобразовать string во float, а если убрать value, будет 2 ввода
+        //    {
+        //        Console.WriteLine("Ввод не распознан, введите еще раз.");
+        //    }
+        //    return number;
+        //}
     }
 }
